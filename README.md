@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # PIEM Tusker Power 3.1 — Operational Command
 
 Plataforma Django para inserção de estudantes do 3º ano no mercado de trabalho. A versão 3.1 completa a operação dos quatro portais RBAC e transforma o painel do gestor em uma central funcional de usuários, e-mails, cursos, inscrições e acolhimento.
