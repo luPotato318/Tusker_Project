@@ -1,0 +1,141 @@
+{% extends 'core/base.html' %}
+{% load static %}
+{% block title %}Painel do Estudante — PIEM{% endblock %}
+
+{% block content %}
+<div class="dashboard-shell">
+  <section class="dashboard-heading">
+    <div>
+      <span class="eyebrow">Painel privado do estudante</span>
+      <h1>Olá, {{ user.nome|default:'estudante' }}</h1>
+      <p class="lead">Acompanhe sua prontidão, entregue evidências e transforme evolução escolar em oportunidades.</p>
+    </div>
+    <div class="heading-actions">
+      <a class="btn btn-outline" href="{% url 'resume_pdf' %}">Baixar currículo PDF</a>
+      <a class="btn btn-gold" href="{% url 'project_create' %}">+ Projeto de portfólio</a>
+    </div>
+  </section>
+
+  <section class="score-hero">
+    <div class="score-main">
+      <span class="eyebrow light">Score de Empregabilidade</span>
+      <div class="score-value">{{ score.score }}<small>/1000</small></div>
+      <strong>{{ score.level }}</strong>
+      <p>Seu resultado é privado. Professores e gestores visualizam o detalhamento para orientar sua evolução.</p>
+    </div>
+    <div class="score-components">
+      <div><span>Frequência</span><strong>{{ score.components.frequencia }}/350</strong><progress value="{{ score.components.frequencia }}" max="350"></progress></div>
+      <div><span>Soft skills</span><strong>{{ score.components.soft_skills }}/300</strong><progress value="{{ score.components.soft_skills }}" max="300"></progress></div>
+      <div><span>Entregas</span><strong>{{ score.components.entregas }}/350</strong><progress value="{{ score.components.entregas }}" max="350"></progress></div>
+    </div>
+    <div class="rank-card">
+      <span>Posição privada</span>
+      <strong>{% if own_rank %}#{{ own_rank.position }}{% else %}—{% endif %}</strong>
+      <small>na escola</small>
+    </div>
+  </section>
+
+  <section class="metric-grid">
+    <article class="metric-card">
+      <span>Frequência</span><strong>{{ risk.presence_rate }}%</strong>
+      <small>Risco: {{ risk.level }} · {{ risk.faltas }} falta{{ risk.faltas|pluralize }}</small>
+    </article>
+    <article class="metric-card">
+      <span>Projetos</span><strong>{{ projects|length }}</strong><small>evidências no portfólio</small>
+    </article>
+    <article class="metric-card">
+      <span>Área de interesse</span><strong class="metric-text">{{ user.area_interesse }}</strong><small>{{ user.turma|default:'Turma a vincular' }}</small>
+    </article>
+  </section>
+
+  <section class="workspace-section">
+    <div class="section-heading">
+      <div><span class="eyebrow">Central de entregas</span><h2>Desafios práticos</h2></div>
+      <span class="badge badge-gold">Professor ↔ Aluno</span>
+    </div>
+    <div class="grid grid-3">
+      {% for challenge in challenges %}
+      <article class="card challenge-card">
+        <div class="card-topline"><span class="badge badge-wine">{{ challenge.area }}</span><strong>{{ challenge.pontos }} pts</strong></div>
+        <h3>{{ challenge.titulo }}</h3>
+        <p>{{ challenge.descricao|truncatewords:24 }}</p>
+        {% if challenge.student_submission %}
+          <div class="submission-state state-{{ challenge.student_submission.status }}">
+            <strong>{{ challenge.student_submission.get_status_display }}</strong>
+            {% if challenge.student_submission.feedback %}<small>{{ challenge.student_submission.feedback|truncatewords:16 }}</small>{% endif %}
+            {% if challenge.student_submission.status != 'approved' %}<a href="{% url 'challenge_submit' challenge.id %}">Atualizar entrega →</a>{% endif %}
+          </div>
+        {% else %}
+          <a class="btn btn-sm btn-gold" href="{% url 'challenge_submit' challenge.id %}">Enviar evidência</a>
+        {% endif %}
+      </article>
+      {% empty %}<div class="empty-state">Nenhum desafio aberto para sua turma.</div>{% endfor %}
+    </div>
+  </section>
+
+  <section class="workspace-section">
+    <div class="section-heading"><div><span class="eyebrow">Oportunidades</span><h2>Vagas exclusivas</h2></div></div>
+    <div class="grid grid-3">
+      {% for job in jobs %}
+      <article class="card job-card">
+        <span class="badge badge-gold">{{ job.get_tipo_display }}</span>
+        <h3>{{ job.titulo }}</h3><strong>{{ job.empresa }}</strong>
+        <p>{{ job.descricao|truncatewords:22 }}</p>
+        <small>{{ job.modalidade }}{% if job.localidade %} · {{ job.localidade }}{% endif %}</small>
+        {% if job.id in applications %}
+          <div class="submission-state state-approved"><strong>Candidatura acompanhada</strong></div>
+        {% else %}
+          <form method="post" action="{% url 'job_apply' job.id %}">{% csrf_token %}<button class="btn btn-sm btn-wine">Candidatar-me</button></form>
+        {% endif %}
+      </article>
+      {% empty %}<div class="empty-state">Novas vagas aparecerão aqui quando publicadas pelas empresas parceiras.</div>{% endfor %}
+    </div>
+  </section>
+
+  <section class="workspace-grid">
+    <div class="workspace-section">
+      <div class="section-heading"><div><span class="eyebrow">Portfólio</span><h2>Meus projetos</h2></div></div>
+      <div class="stack-list">
+        {% for project in projects %}
+        <article class="compact-row">
+          <div><span class="badge badge-wine">{{ project.get_status_display }}</span><h3>{{ project.titulo }}</h3><p>{{ project.resumo|truncatewords:18 }}</p></div>
+          <div class="row-actions">{% if project.certificado %}<a class="btn btn-xs btn-outline" href="{% url 'certificate_verify' project.certificado.codigo %}">Certificado</a>{% endif %}<a class="btn btn-xs btn-outline" href="{% url 'project_edit' project.id %}">Editar</a><form method="post" action="{% url 'project_delete' project.id %}" data-confirm="Excluir o projeto {{ project.titulo }}? O certificado vinculado também será removido.">{% csrf_token %}<button class="btn btn-xs btn-danger">Excluir</button></form></div>
+        </article>
+        {% empty %}<div class="empty-state">Registre seu primeiro projeto para começar o portfólio.</div>{% endfor %}
+      </div>
+    </div>
+    <div class="workspace-section">
+      <div class="section-heading"><div><span class="eyebrow">Agenda</span><h2>Cursos e oficinas</h2></div><a href="{% url 'courses' %}">Abrir catálogo →</a></div>
+      <div class="stack-list">
+        {% for workshop in workshops %}
+        <article class="compact-row">
+          <div><strong>{{ workshop.titulo }}</strong><small>{{ workshop.data|date:'d/m · H:i' }} · {{ workshop.vagas_restantes }} vagas</small></div>
+          <form method="post" action="{% url 'workshop_enroll' workshop.id %}">{% csrf_token %}<button class="btn btn-sm {% if workshop.id in user_enrollments %}btn-outline{% else %}btn-gold{% endif %}">{% if workshop.id in user_enrollments %}Cancelar{% else %}Inscrever{% endif %}</button></form>
+        </article>
+        {% empty %}<div class="empty-state">Sem oficinas agendadas.</div>{% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <section class="tutor-card" x-data="{ listening: false }">
+    <div class="section-heading">
+      <div><span class="eyebrow">Mentor cognitivo multi-LLM</span><h2>Tutor PIEM 2.0</h2><p>Orientação de carreira, prática e simulação de entrevista com histórico salvo.</p></div>
+      <span class="badge badge-wine">OpenAI · Gemini · Anthropic</span>
+    </div>
+    <div class="tutor-chips-group">
+      <button type="button" class="tutor-chip" onclick="sendQuickPrompt('recomendar_cursos')">Recomendar oficinas</button>
+      <button type="button" class="tutor-chip" onclick="sendQuickPrompt('tarefa_dia')">Tarefa do dia</button>
+      <button type="button" class="tutor-chip" onclick="sendQuickPrompt('ideia_projeto')">Ideia de projeto</button>
+      <button type="button" class="tutor-chip" onclick="sendQuickPrompt('simular_entrevista')">Simular entrevista</button>
+    </div>
+    <div id="chat" class="chat-box" data-url="{% url 'tutor_api' %}">
+      {% for item in chat_history %}
+        <div class="chat-message {% if item.role == 'user' %}user-message{% else %}tutor-message{% endif %}"><span class="sender">{% if item.role == 'user' %}Você{% else %}Tutor PIEM{% endif %}</span><div class="bubble">{{ item.content|linebreaksbr }}</div></div>
+      {% empty %}<div class="chat-message tutor-message"><span class="sender">Tutor PIEM</span><div class="bubble">Olá, {{ user.nome }}. Qual competência profissional você quer desenvolver hoje?</div></div>{% endfor %}
+    </div>
+    <div class="chat-input-group">{% csrf_token %}<input id="message" type="text" placeholder="Escreva sua pergunta..." autocomplete="off"><button type="button" class="btn btn-outline voice-button" onclick="startVoiceInput()" aria-label="Ditado por voz">🎙</button><button id="tutor-send-btn" type="button" class="btn btn-gold" onclick="askTutor()">Enviar</button></div>
+  </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}<script src="{% static 'core/js/tutor.js' %}"></script>{% endblock %}

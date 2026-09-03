@@ -1,0 +1,44 @@
+{% extends 'core/base.html' %}
+{% block title %}Portal Docente — PIEM{% endblock %}
+{% block content %}
+<div class="dashboard-shell">
+  <section class="dashboard-heading">
+    <div><span class="eyebrow">Portal do Professor / Colaborador</span><h1>Visão da turma</h1><p class="lead">Avalie evidências, desenvolva competências e antecipe riscos de abandono escolar.</p></div>
+    <span class="badge badge-wine">{{ user.escola|default:'Gestão geral' }}</span>
+  </section>
+
+  <section class="workspace-grid teacher-top-grid">
+    <article class="workspace-section">
+      <div class="section-heading"><div><span class="eyebrow">Central de correção</span><h2>Entregas aguardando feedback</h2></div><span class="count-bubble">{{ pending_submissions|length }}</span></div>
+      <div class="stack-list">
+        {% for submission in pending_submissions %}
+        <article class="compact-row"><div><strong>{{ submission.aluno.nome }}</strong><span>{{ submission.desafio.titulo }}</span><small>Enviado em {{ submission.enviado_em|date:'d/m/Y H:i' }}</small></div><a class="btn btn-sm btn-gold" href="{% url 'submission_review' submission.id %}">Corrigir</a></article>
+        {% empty %}<div class="empty-state">Tudo em dia. Não há entregas pendentes.</div>{% endfor %}
+      </div>
+    </article>
+    <article class="workspace-section">
+      <div class="section-heading"><div><span class="eyebrow">Atividade prática</span><h2>Novo desafio</h2></div></div>
+      <form method="post" action="{% url 'challenge_create' %}" class="dense-form">{% csrf_token %}{{ challenge_form.as_p }}<button class="btn btn-wine">Publicar para a turma</button></form>
+    </article>
+  </section>
+
+  <section class="workspace-section">
+    <div class="section-heading"><div><span class="eyebrow">Ranking pedagógico detalhado</span><h2>Empregabilidade e prevenção de abandono</h2><p>Uso restrito à equipe escolar. O aluno visualiza apenas sua própria posição.</p></div></div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>#</th><th>Aluno</th><th>Turma</th><th>Score</th><th>Frequência</th><th>Soft skills</th><th>Entregas</th><th>Risco</th><th>Ação</th></tr></thead>
+        <tbody>
+          {% for item in ranking %}
+          <tr>
+            <td><strong>{{ item.position }}</strong></td><td><strong>{{ item.student.nome }}</strong><small>{{ item.student.area_interesse }}</small></td><td>{{ item.student.turma|default:'—' }}</td>
+            <td><span class="score-pill">{{ item.score }}</span></td><td>{{ item.components.frequencia }}/350</td><td>{{ item.components.soft_skills }}/300</td><td>{{ item.components.entregas }}/350</td>
+            <td><span class="badge {% if item.risk.level == 'Crítico' %}badge-critical{% elif item.risk.level == 'Atenção' %}badge-warning{% else %}badge-stable{% endif %}">{{ item.risk.level }}</span></td>
+            <td><a href="{% url 'soft_skill_assess' item.student.id %}">Avaliar soft skills →</a></td>
+          </tr>
+          {% empty %}<tr><td colspan="9">Vincule alunos às suas turmas para iniciar o acompanhamento.</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>
+{% endblock %}

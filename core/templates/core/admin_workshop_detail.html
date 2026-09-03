@@ -1,0 +1,19 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ workshop.titulo }} — Gestão PIEM{% endblock %}
+{% block content %}
+<div class="dashboard-shell">
+  <section class="dashboard-heading">
+    <div><a href="{% url 'admin_dashboard' %}#cursos">← Voltar aos cursos</a><span class="eyebrow">Gestão de capacitação</span><h1>{{ workshop.titulo }}</h1><p class="lead">{{ workshop.area }} · {{ workshop.get_modalidade_display }} · {{ workshop.data|date:'d/m/Y H:i' }}</p></div>
+    <div class="heading-actions"><a class="btn btn-gold" href="{% url 'admin_workshop_edit' workshop.id %}">Editar curso</a><form method="post" action="{% url 'admin_workshop_delete' workshop.id %}" data-confirm="Excluir este curso? Se houver inscritos, ele será cancelado.">{% csrf_token %}<button class="btn btn-danger">Excluir</button></form></div>
+  </section>
+  <section class="metric-grid">
+    <article class="metric-card"><span>Status</span><strong class="metric-text">{{ workshop.get_status_display }}</strong><small>visibilidade no catálogo</small></article>
+    <article class="metric-card"><span>Inscritos</span><strong>{{ enrollments|length }}</strong><small>de {{ workshop.vagas }} vagas</small></article>
+    <article class="metric-card"><span>Duração</span><strong>{{ workshop.duracao_minutos }}</strong><small>minutos · {{ workshop.local|default:'local a definir' }}</small></article>
+  </section>
+  <section class="workspace-section">
+    <div class="section-heading"><div><span class="eyebrow">Participantes</span><h2>Lista de inscritos</h2><p>Use estes dados para presença, comunicação e organização da turma.</p></div></div>
+    <div class="table-wrap"><table class="data-table"><thead><tr><th>Aluno</th><th>E-mail</th><th>Escola / turma</th><th>Inscrição</th></tr></thead><tbody>{% for enrollment in enrollments %}<tr><td><strong>{{ enrollment.user.nome }}</strong><small>{{ enrollment.user.identifier }}</small></td><td>{{ enrollment.user.email|default:'Não informado' }}</td><td>{{ enrollment.user.escola|default:'—' }}<small>{{ enrollment.user.turma|default:'—' }}</small></td><td>{{ enrollment.criado_em|date:'d/m/Y H:i' }}</td></tr>{% empty %}<tr><td colspan="4"><div class="empty-state">Ainda não há inscrições neste curso.</div></td></tr>{% endfor %}</tbody></table></div>
+  </section>
+</div>
+{% endblock %}

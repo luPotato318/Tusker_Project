@@ -1,0 +1,22 @@
+{% extends 'core/base.html' %}
+{% block title %}Portal Corporativo — PIEM{% endblock %}
+{% block content %}
+<div class="dashboard-shell">
+  <section class="dashboard-heading"><div><span class="eyebrow">Portal Corporativo</span><h1>Talentos prontos para o próximo passo</h1><p class="lead">Descubra competências com consentimento, identidade anonimizada e evidências verificáveis.</p></div><span class="badge badge-gold">Privacidade por padrão</span></section>
+  <section class="workspace-section filter-panel">
+    <form method="get" class="filter-form"><select name="area"><option value="">Todas as áreas</option>{% for area in areas %}<option value="{{ area }}">{{ area }}</option>{% endfor %}</select><input name="competencia" placeholder="Competência: Python, liderança..."><input type="number" name="score" min="0" max="1000" placeholder="Score mínimo"><button class="btn btn-wine">Filtrar talentos</button></form>
+  </section>
+  <section class="workspace-section">
+    <div class="section-heading"><div><span class="eyebrow">Vitrine anônima</span><h2>{{ talents|length }} talentos encontrados</h2></div></div>
+    <div class="grid grid-3">
+      {% for item in talents %}
+      <article class="card talent-card"><div class="talent-code">{{ item.student.talent_code }}</div><span class="badge badge-wine">{{ item.student.area_interesse }}</span><div class="talent-score"><strong>{{ item.score }}</strong><small>/1000</small></div><p>{{ item.level }}</p><div class="skill-cloud">{% for skill in item.student.competencies_list %}<span>{{ skill }}</span>{% empty %}<span>Competências em validação</span>{% endfor %}</div><small>{{ item.student.turma|default:'3º ano' }} · perfil consentido</small></article>
+      {% empty %}<div class="empty-state">Nenhum talento corresponde aos filtros atuais.</div>{% endfor %}
+    </div>
+  </section>
+  <section class="workspace-grid">
+    <article class="workspace-section"><div class="section-heading"><div><span class="eyebrow">Central de vagas</span><h2>Publicar oportunidade</h2></div></div><form method="post" action="{% url 'job_create' %}" class="dense-form">{% csrf_token %}{{ job_form.as_p }}<button class="btn btn-gold">Publicar vaga</button></form></article>
+    <article class="workspace-section"><div class="section-heading"><div><span class="eyebrow">Processos ativos</span><h2>Suas oportunidades</h2></div></div><div class="stack-list">{% for job in jobs %}<article class="compact-row"><div><strong>{{ job.titulo }}</strong><span>{{ job.empresa }}</span><small>{{ job.candidaturas.count }} candidatura{{ job.candidaturas.count|pluralize }}</small></div><span class="badge {% if job.ativa %}badge-stable{% else %}badge-warning{% endif %}">{% if job.ativa %}Ativa{% else %}Encerrada{% endif %}</span></article>{% empty %}<div class="empty-state">Nenhuma vaga publicada.</div>{% endfor %}</div></article>
+  </section>
+</div>
+{% endblock %}

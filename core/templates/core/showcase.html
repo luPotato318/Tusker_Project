@@ -1,0 +1,78 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Vitrine de Projetos — PIEM{% endblock %}
+
+{% block content %}
+<section>
+  <div style="text-align: center; max-width: 720px; margin: 0 auto 40px auto;">
+    <span class="eyebrow">Vitrine de Talentos</span>
+    <h1>Soluções Desenvolvidas pelos Estudantes</h1>
+    <p class="lead">
+      Conheça os projetos finais criados pelos alunos durante as oficinas do PIEM. Ideias inovadoras prontas para gerar impacto no mercado.
+    </p>
+  </div>
+
+  <!-- Barra de Pesquisa e Filtros -->
+  <div style="margin-bottom: 32px;">
+    <div class="form-group" style="max-width: 500px; margin: 0 auto 20px auto;">
+      <input type="text" id="showcase-search" placeholder="&#128065; Buscar projeto por título, resumo ou autor..." style="border-radius: var(--radius-full); padding: 14px 20px;">
+    </div>
+
+    <div class="chips-container showcase-chips" style="justify-content: center;">
+      <span class="chip active" data-area="todas">Todas as áreas</span>
+      {% for area in areas %}
+        <span class="chip" data-area="{{ area }}">{{ area }}</span>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Grid de Projetos da Vitrine -->
+  <div class="grid grid-3 showcase-grid">
+    {% for project in projects %}
+      <article class="card project-card" data-area="{{ project.area }}">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+          <span class="badge badge-wine">{{ project.area }}</span>
+          {% if project.status == 'concluido' %}
+            <span class="badge badge-stable">Concluído</span>
+          {% else %}
+            <span class="badge badge-gold">{{ project.get_status_display }}</span>
+          {% endif %}
+        </div>
+
+        <h3 class="card-title" style="margin-bottom: 8px;">{{ project.titulo }}</h3>
+        
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 12px;">
+          Por <strong class="card-author">{{ project.aluno.nome }}</strong>
+        </p>
+
+        <p class="card-summary" style="flex: 1; font-size: 0.95rem;">
+          {{ project.resumo }}
+        </p>
+
+        <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border-line); display: flex; gap: 12px; flex-wrap: wrap;">
+          {% if project.link_projeto %}
+            <a href="{{ project.link_projeto }}" target="_blank" rel="noopener" class="btn btn-sm btn-gold">Ver Protótipo &rarr;</a>
+          {% endif %}
+          
+          {% if project.certificado %}
+            <a href="{% url 'certificate_verify' project.certificado.codigo %}" class="btn btn-sm btn-outline">Ver Certificado</a>
+          {% endif %}
+        </div>
+      </article>
+    {% empty %}
+      <div id="showcase-empty" style="grid-column: 1 / -1; text-align: center; padding: 60px 0;">
+        <p class="lead">Nenhum projeto público encontrado no momento.</p>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div id="showcase-empty" style="display: none; grid-column: 1 / -1; text-align: center; padding: 60px 0;">
+    <p class="lead">Nenhum projeto encontrado para os filtros selecionados.</p>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'core/js/showcase.js' %}"></script>
+{% endblock %}

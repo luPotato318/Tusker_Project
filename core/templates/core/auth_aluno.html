@@ -1,0 +1,57 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ title }} — PIEM{% endblock %}
+
+{% block content %}
+<div class="narrow" style="padding: 40px 0;">
+  <div style="text-align: center; margin-bottom: 28px;">
+    <span class="eyebrow">Portal do Estudante &amp; Mercado</span>
+    <h1 class="gradient-text">{{ title }}</h1>
+    <p style="color: var(--text-muted);">Acesse sua conta com seu CPF ou E-mail para acompanhar projetos e cursos.</p>
+  </div>
+
+  <div class="card glass-card" style="padding: 40px; border-radius: var(--radius-lg);">
+    <form method="post">
+      {% csrf_token %}
+
+      {% for field in form %}
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% for error in field.errors %}
+            <span class="error-text">{{ error }}</span>
+          {% endfor %}
+        </div>
+      {% endfor %}
+
+      {% for error in form.non_field_errors %}
+        <div class="alert alert-error" style="margin-top: 12px;">
+          <span>{{ error }}</span>
+        </div>
+      {% endfor %}
+
+      <button type="submit" class="btn btn-gold btn-lg" style="margin-top: 20px; width: 100%;">
+        {% if is_register %}Concluir Cadastro{% else %}Entrar no Meu Painel{% endif %} &rarr;
+      </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border-line);">
+      {% if is_register %}
+        <p style="font-size: 0.95rem; margin: 0;">
+          Já possui cadastro no PIEM? <a href="{% url 'login_aluno' %}" style="font-weight: 700;">Faça seu login aqui</a>.
+        </p>
+      {% else %}
+        <p style="font-size: 0.95rem; margin: 0;">
+          Ainda não possui conta? <a href="{% url 'register' %}" style="font-weight: 700;">Cadastre-se como Aluno ou Empresa</a>.
+        </p>
+      {% endif %}
+      
+      <div style="margin-top: 16px;">
+        <a href="{% url 'login_admin' %}" style="font-size: 0.85rem; color: var(--text-muted); text-decoration: underline;">
+          &#128274; Acesso restrito para Administradores do Sistema
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends 'core/base.html' %}
+{% block title %}Gestão 3.1 — PIEM{% endblock %}
+{% block content %}
+<div class="dashboard-shell">
+  <section class="dashboard-heading">
+    <div>
+      <span class="eyebrow">Governança e operação</span>
+      <h1>Centro de comando PIEM</h1>
+      <p class="lead">Gerencie usuários, e-mails de acesso, cursos, inscrições, acolhimento e relatórios em um só lugar.</p>
+    </div>
+    <div class="heading-actions">
+      <a class="btn btn-outline" href="{% url 'teacher_dashboard' %}">Visão pedagógica</a>
+      <a class="btn btn-gold" href="{% url 'recruiter_dashboard' %}">Visão corporativa</a>
+    </div>
+  </section>
+
+  <nav class="admin-shortcuts" aria-label="Atalhos administrativos">
+    <a href="#usuarios">Usuários</a><a href="#cursos">Cursos e oficinas</a><a href="#acolhimento">Canal Seguro</a><a href="#auditoria">Auditoria</a>
+  </nav>
+
+  <section class="metric-grid admin-metrics">
+    <article class="metric-card"><span>Alunos</span><strong>{{ metrics.total_alunos }}</strong><small>{{ metrics.active_users }} contas ativas</small></article>
+    <article class="metric-card"><span>Professores</span><strong>{{ metrics.total_teachers }}</strong><small>colaboradores habilitados</small></article>
+    <article class="metric-card"><span>Cursos</span><strong>{{ metrics.total_workshops }}</strong><small>capacitações cadastradas</small></article>
+    <article class="metric-card alert-metric"><span>Pendências</span><strong>{{ metrics.pending_reports }}</strong><small>{{ metrics.users_without_email }} usuários sem e-mail</small></article>
+  </section>
+
+  <section class="export-strip">
+    <div><strong>Relatório de impacto e inserção</strong><small>Score, frequência, soft skills e entregas por aluno.</small></div>
+    <div class="heading-actions"><a class="btn btn-sm btn-outline" href="{% url 'impact_export' 'json' %}">JSON</a><a class="btn btn-sm btn-outline" href="{% url 'impact_export' 'xlsx' %}">Excel</a><a class="btn btn-sm btn-wine" href="{% url 'impact_export' 'pdf' %}">PDF</a></div>
+  </section>
+
+  <section id="usuarios" class="workspace-section anchor-section">
+    <div class="section-heading">
+      <div><span class="eyebrow">Contas, e-mails e permissões</span><h2>Usuários e vínculos</h2><p>Cadastre, edite, desative ou exclua contas sem depender do Django Admin.</p></div>
+      <a class="btn btn-gold" href="{% url 'admin_user_create' %}">+ Adicionar usuário</a>
+    </div>
+    <form method="get" action="#usuarios" class="management-filter">
+      <input name="usuario" value="{{ user_query }}" placeholder="Buscar por nome, CPF ou e-mail">
+      <select name="papel"><option value="">Todos os papéis</option>{% for value, label in user_roles %}<option value="{{ value }}" {% if selected_role == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+      <button class="btn btn-sm btn-wine">Filtrar</button>{% if user_query or selected_role %}<a class="btn btn-sm btn-outline" href="{% url 'admin_dashboard' %}#usuarios">Limpar</a>{% endif %}
+    </form>
+    <div class="table-wrap">
+      <table class="data-table management-table">
+        <thead><tr><th>Nome</th><th>Acesso / e-mail</th><th>Papel</th><th>Vínculo</th><th>Status</th><th>Ações</th></tr></thead>
+        <tbody>{% for account in users_list %}
+          <tr>
+            <td><strong>{{ account.nome }}</strong><small>Desde {{ account.created_at|date:'d/m/Y' }}</small></td>
+            <td>{{ account.identifier }}{% if account.email and account.email != account.identifier %}<small>{{ account.email }}</small>{% elif not account.email %}<small class="text-warning">E-mail não informado</small>{% endif %}</td>
+            <td><span class="badge {% if account.perfil_acesso == 'admin' %}badge-wine{% elif account.perfil_acesso == 'teacher' %}badge-gold{% else %}badge-stable{% endif %}">{{ account.get_perfil_acesso_display }}</span></td>
+            <td>{{ account.escola|default:'Sem escola' }}<small>{{ account.turma|default:'Sem turma' }}</small></td>
+            <td><span class="status-dot {% if account.is_active %}is-active{% else %}is-inactive{% endif %}">{% if account.is_active %}Ativo{% else %}Inativo{% endif %}</span></td>
+            <td><div class="row-actions"><a class="btn btn-xs btn-outline" href="{% url 'admin_user_edit' account.id %}">Editar</a>{% if account != user and not account.is_superuser %}<form method="post" action="{% url 'admin_user_toggle_active' account.id %}">{% csrf_token %}<button class="btn btn-xs btn-outline">{% if account.is_active %}Desativar{% else %}Reativar{% endif %}</button></form><form method="post" action="{% url 'admin_user_delete' account.id %}" data-confirm="Excluir definitivamente {{ account.nome }}? Contas com histórico protegido deverão ser apenas desativadas.">{% csrf_token %}<button class="btn btn-xs btn-danger">Excluir</button></form>{% endif %}</div></td>
+          </tr>
+        {% empty %}<tr><td colspan="6"><div class="empty-state">Nenhum usuário corresponde aos filtros.</div></td></tr>{% endfor %}</tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="cursos" class="workspace-section anchor-section">
+    <div class="section-heading">
+      <div><span class="eyebrow">Catálogo e inscrições</span><h2>Cursos e oficinas</h2><p>Publique, edite, acompanhe vagas e gerencie participantes.</p></div>
+      <div class="heading-actions"><a class="btn btn-outline" href="{% url 'courses' %}">Ver catálogo</a><a class="btn btn-gold" href="{% url 'admin_workshop_create' %}">+ Novo curso</a></div>
+    </div>
+    <form method="get" action="#cursos" class="management-filter">
+      <input name="curso" value="{{ course_query }}" placeholder="Buscar título ou área">
+      <select name="status_curso"><option value="">Todos os status</option>{% for value, label in workshop_statuses %}<option value="{{ value }}" {% if selected_course_status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+      <button class="btn btn-sm btn-wine">Filtrar</button>{% if course_query or selected_course_status %}<a class="btn btn-sm btn-outline" href="{% url 'admin_dashboard' %}#cursos">Limpar</a>{% endif %}
+    </form>
+    <div class="table-wrap">
+      <table class="data-table management-table">
+        <thead><tr><th>Curso</th><th>Agenda</th><th>Formato</th><th>Inscrições</th><th>Status</th><th>Ações</th></tr></thead>
+        <tbody>{% for workshop in workshops_list %}
+          <tr>
+            <td><strong>{{ workshop.titulo }}</strong><small>{{ workshop.area }}{% if workshop.escola %} · {{ workshop.escola }}{% endif %}</small></td>
+            <td>{{ workshop.data|date:'d/m/Y H:i' }}<small>{{ workshop.duracao_minutos }} minutos</small></td>
+            <td>{{ workshop.get_modalidade_display }}<small>{{ workshop.local|default:'Local a definir' }}</small></td>
+            <td><strong>{{ workshop.inscricoes.count }}/{{ workshop.vagas }}</strong><small>{{ workshop.vagas_restantes }} vagas restantes</small></td>
+            <td><span class="badge {% if workshop.status == 'published' %}badge-stable{% elif workshop.status == 'cancelled' %}badge-warning{% else %}badge-wine{% endif %}">{{ workshop.get_status_display }}</span></td>
+            <td><div class="row-actions"><a class="btn btn-xs btn-outline" href="{% url 'admin_workshop_detail' workshop.id %}">Inscritos</a><a class="btn btn-xs btn-outline" href="{% url 'admin_workshop_edit' workshop.id %}">Editar</a><form method="post" action="{% url 'admin_workshop_delete' workshop.id %}" data-confirm="Excluir este curso? Se houver inscritos, ele será cancelado para preservar o histórico.">{% csrf_token %}<button class="btn btn-xs btn-danger">Excluir</button></form></div></td>
+          </tr>
+        {% empty %}<tr><td colspan="6"><div class="empty-state">Nenhum curso corresponde aos filtros.</div></td></tr>{% endfor %}</tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="acolhimento" class="workspace-section anchor-section">
+    <div class="section-heading"><div><span class="eyebrow">Canal Seguro cifrado</span><h2>Acolhimento</h2><p>Atualize cada protocolo entre recebido, em acolhimento e resolvido.</p></div></div>
+    <div class="reports-grid">{% for report in safe_reports %}
+      <article class="report-card"><div class="card-topline"><span class="badge {% if report.item.status == 'resolved' %}badge-stable{% else %}badge-warning{% endif %}">{{ report.item.get_status_display }}</span><small>{{ report.item.criado_em|date:'d/m/Y H:i' }}</small></div><strong>{{ report.item.categoria }} · #{{ report.item.protocolo|stringformat:'s'|slice:':8'|upper }}</strong><p>{{ report.mensagem }}</p>{% if report.contato %}<small>Contato seguro: {{ report.contato }}</small>{% endif %}<form method="post" action="{% url 'admin_safe_report_toggle' report.item.id %}" class="inline-status-form">{% csrf_token %}<select name="status"><option value="open" {% if report.item.status == 'open' %}selected{% endif %}>Recebido</option><option value="in_progress" {% if report.item.status == 'in_progress' %}selected{% endif %}>Em acolhimento</option><option value="resolved" {% if report.item.status == 'resolved' %}selected{% endif %}>Resolvido</option></select><button class="btn btn-sm btn-outline">Salvar status</button></form></article>
+    {% empty %}<div class="empty-state">Nenhum relato recebido.</div>{% endfor %}</div>
+  </section>
+
+  <section id="auditoria" class="workspace-section anchor-section">
+    <div class="section-heading"><div><span class="eyebrow">Audit trail</span><h2>Atividade sensível recente</h2></div></div>
+    <div class="audit-grid">{% for log in audit_logs %}<article><strong>{{ log.acao }}</strong><span>{{ log.ator.nome|default:'Sistema' }} · {{ log.entidade }} #{{ log.entidade_id|default:'—' }}</span><small>{{ log.criado_em|date:'d/m/Y H:i:s' }} · {{ log.ip|default:'IP não registrado' }}</small></article>{% empty %}<div class="empty-state">A trilha será preenchida conforme as ações administrativas ocorrerem.</div>{% endfor %}</div>
+  </section>
+</div>
+{% endblock %}

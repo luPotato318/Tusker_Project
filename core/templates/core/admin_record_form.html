@@ -1,0 +1,13 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ title }} — PIEM{% endblock %}
+{% block content %}
+<section class="form-page admin-form-page">
+  <a href="{{ cancel_url }}">← Voltar à gestão</a>
+  <span class="eyebrow">{{ eyebrow }}</span>
+  <h1>{{ title }}</h1>
+  <p class="lead">Campos marcados como obrigatórios precisam ser preenchidos antes de salvar.</p>
+  <article class="card form-card">
+    <form method="post" class="admin-record-form">{% csrf_token %}{{ form.as_p }}<div class="form-actions"><button class="btn btn-gold">{{ submit_label }}</button><a class="btn btn-outline" href="{{ cancel_url }}">Cancelar</a></div></form>
+  </article>
+</section>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{% if project %}Editar projeto{% else %}Novo projeto{% endif %} — PIEM{% endblock %}
+
+{% block content %}
+<div class="narrow" style="padding: 40px 0;">
+  <div style="margin-bottom: 28px;">
+    <span class="eyebrow">Projeto Final</span>
+    <h1>{% if project %}Atualize seu projeto{% else %}Transforme sua ideia em solução de impacto{% endif %}</h1>
+    <p class="lead">
+      Preencha as informações do seu projeto. Projetos marcados como concluídos receberão a emissão de certificado oficial.
+    </p>
+  </div>
+
+  <div class="card" style="padding: 36px;">
+    <form method="post">
+      {% csrf_token %}
+
+      {% for field in form %}
+        <div class="form-group">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          
+          {% for error in field.errors %}
+            <span class="error-text">{{ error }}</span>
+          {% endfor %}
+        </div>
+      {% endfor %}
+
+      {% for error in form.non_field_errors %}
+        <span class="error-text" style="display: block; margin-top: 8px;">{{ error }}</span>
+      {% endfor %}
+
+      <div style="display: flex; gap: 12px; margin-top: 20px;">
+        <button type="submit" class="btn btn-gold" style="flex: 1;">{% if project %}Salvar alterações{% else %}Salvar projeto{% endif %}</button>
+        <a href="{% url 'dashboard' %}" class="btn btn-outline">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

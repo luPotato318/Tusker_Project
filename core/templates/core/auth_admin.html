@@ -1,0 +1,53 @@
+{% extends 'core/base.html' %}
+
+{% block title %}{{ title }} — PIEM Gestão{% endblock %}
+
+{% block content %}
+<div class="narrow" style="padding: 50px 0;">
+  <div style="text-align: center; margin-bottom: 28px;">
+    <span class="badge badge-wine" style="padding: 6px 16px; font-size: 0.85rem; letter-spacing: 0.1em; margin-bottom: 12px;">
+      &#128274; Portal de Gestão &amp; Governança
+    </span>
+    <h1 style="color: var(--primary-wine-dark);">Acesso Administrativo</h1>
+    <p style="color: var(--text-muted); max-width: 500px; margin: 0 auto;">
+      Área privativa para gestores escolares, coordenadores de programa e administradores do PIEM.
+    </p>
+  </div>
+
+  <div class="card" style="padding: 40px; border-radius: var(--radius-lg); border: 2px solid var(--primary-wine); box-shadow: var(--shadow-lg); background: #ffffff;">
+    <div style="background: #fdf2f5; padding: 14px; border-radius: var(--radius-sm); border-left: 4px solid var(--primary-wine); margin-bottom: 24px; font-size: 0.88rem; color: var(--primary-wine-dark);">
+      &#8505;&#65039; <strong>Aviso de Segurança:</strong> As tentativas de acesso nesta área são registradas para auditoria de conformidade.
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+
+      {% for field in form %}
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {% for error in field.errors %}
+            <span class="error-text">{{ error }}</span>
+          {% endfor %}
+        </div>
+      {% endfor %}
+
+      {% for error in form.non_field_errors %}
+        <div class="alert alert-error" style="margin-top: 12px;">
+          <span>{{ error }}</span>
+        </div>
+      {% endfor %}
+
+      <button type="submit" class="btn btn-wine btn-lg" style="margin-top: 20px; width: 100%;">
+        Autenticar como Administrador &rarr;
+      </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border-line);">
+      <p style="font-size: 0.9rem; color: var(--text-muted); margin: 0;">
+        É aluno ou parceiro corporativo? <a href="{% url 'login_aluno' %}" style="font-weight: 700;">Acesse o portal do estudante</a>.
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

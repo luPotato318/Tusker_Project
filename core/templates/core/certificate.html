@@ -1,0 +1,35 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Certificado Oficial — {{ certificate.aluno.nome }}{% endblock %}
+
+{% block content %}
+<div class="narrow" style="padding: 40px 0;">
+  <div class="certificate-frame">
+    <img src="{% static 'piem-logo.jpg' %}" alt="Logo PIEM" class="certificate-logo">
+    
+    <span class="badge badge-gold" style="margin: 0 auto 16px auto;">Certificado Autêntico &amp; Validado</span>
+    
+    <h1 style="font-size: 2.4rem; color: var(--primary-wine);">{{ certificate.aluno.nome }}</h1>
+    
+    <p class="lead" style="margin: 16px auto; max-width: 600px;">
+      Concluiu com êxito o projeto de inserção <strong>"{{ certificate.projeto.titulo }}"</strong> na área estratégica de <strong>{{ certificate.projeto.area }}</strong> no âmbito do Projeto de Inserção Estudantil no Mercado de Trabalho (PIEM).
+    </p>
+    
+    <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 20px;">
+      Emitido em {{ certificate.emitido_em|date:'d/m/Y' }} · Código Único de Validação:
+    </p>
+    <code style="background: var(--bg-paper); padding: 6px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border-line); font-size: 0.95rem; font-weight: 700;">
+      {{ certificate.codigo }}
+    </code>
+    
+    <div>
+      <img class="qr-code-img" src="{% url 'certificate_qr' certificate.codigo %}" alt="QR Code de Validação de Autenticidade">
+    </div>
+    
+    <p style="font-weight: 700; color: var(--primary-wine); font-size: 0.9rem; margin-top: 12px;">
+      SESI &amp; Tusker Power · Plataforma PIEM
+    </p>
+  </div>
+</div>
+{% endblock %}

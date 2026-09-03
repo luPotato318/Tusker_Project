@@ -1,0 +1,42 @@
+{% extends 'core/base.html' %}
+{% block title %}Cursos e oficinas — PIEM{% endblock %}
+{% block content %}
+<div class="dashboard-shell catalog-page">
+  <section class="dashboard-heading">
+    <div><span class="eyebrow">Formação prática</span><h1>Cursos e oficinas PIEM</h1><p class="lead">Encontre capacitações por área, formato e disponibilidade. As inscrições são controladas em tempo real.</p></div>
+    {% if user.is_authenticated and user.perfil_acesso == 'student' %}<a class="btn btn-outline" href="{% url 'dashboard' %}">Voltar ao meu painel</a>{% endif %}
+  </section>
+
+  <form method="get" class="catalog-filter">
+    <input name="q" value="{{ query }}" placeholder="Buscar curso, tema ou área">
+    <select name="area"><option value="">Todas as áreas</option>{% for area in areas %}<option value="{{ area }}" {% if selected_area == area %}selected{% endif %}>{{ area }}</option>{% endfor %}</select>
+    <select name="modalidade"><option value="">Todos os formatos</option>{% for value, label in modalities %}<option value="{{ value }}" {% if selected_modality == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+    <button class="btn btn-wine">Buscar</button>
+    {% if query or selected_area or selected_modality %}<a class="btn btn-outline" href="{% url 'courses' %}">Limpar</a>{% endif %}
+  </form>
+
+  <section class="grid grid-3 course-grid">
+    {% for course in courses %}
+    <article class="card course-card">
+      <img class="card-cover" src="{{ course.image_url }}" alt="Imagem contextual de {{ course.area }}" loading="lazy">
+      <div class="card-topline"><span class="badge badge-wine">{{ course.area }}</span><span class="badge badge-stable">{{ course.get_modalidade_display }}</span></div>
+      <h2>{{ course.titulo }}</h2>
+      <p>{{ course.descricao|truncatewords:28 }}</p>
+      <dl class="course-facts">
+        <div><dt>Data</dt><dd>{{ course.data|date:'d/m/Y · H:i' }}</dd></div>
+        <div><dt>Duração</dt><dd>{{ course.duracao_minutos }} min</dd></div>
+        <div><dt>Local</dt><dd>{{ course.local|default:'A definir' }}</dd></div>
+        <div><dt>Vagas</dt><dd>{{ course.vagas_restantes }} de {{ course.vagas }}</dd></div>
+      </dl>
+      {% if user.is_authenticated and user.perfil_acesso == 'student' %}
+        <form method="post" action="{% url 'workshop_enroll' course.id %}">{% csrf_token %}<input type="hidden" name="next" value="{% url 'courses' %}">{% if course.id in user_enrollments %}<button class="btn btn-outline">Cancelar inscrição</button>{% elif course.aceita_inscricoes %}<button class="btn btn-gold">Inscrever-me</button>{% else %}<button class="btn btn-outline" disabled>Inscrições encerradas</button>{% endif %}</form>
+      {% elif user.is_authenticated %}
+        <small class="course-notice">O gerenciamento está disponível no portal correspondente ao seu perfil.</small>
+      {% else %}
+        <a class="btn btn-gold" href="{% url 'login_aluno' %}">Entrar para me inscrever</a>
+      {% endif %}
+    </article>
+    {% empty %}<div class="empty-state">Não encontramos cursos disponíveis com esses filtros.</div>{% endfor %}
+  </section>
+</div>
+{% endblock %}

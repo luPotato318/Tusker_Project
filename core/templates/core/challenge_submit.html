@@ -1,0 +1,3 @@
+{% extends 'core/base.html' %}
+{% block title %}Entregar desafio — PIEM{% endblock %}
+{% block content %}<section class="form-page"><a href="{% url 'dashboard' %}">← Voltar ao painel</a><span class="eyebrow">Desafio prático · {{ challenge.pontos }} pontos</span><h1>{{ challenge.titulo }}</h1><p class="lead">{{ challenge.descricao }}</p><article class="card form-card"><form method="post">{% csrf_token %}{{ form.as_p }}<button class="btn btn-gold">Enviar para correção</button></form></article></section>{% endblock %}
