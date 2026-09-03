@@ -66,4 +66,4 @@ urllib3==2.7.0
 websockets==16.1.1
 Werkzeug==3.0.3
 whitenoise
-psycopg2-binary
+psycopg[binary]
