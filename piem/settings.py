@@ -85,7 +85,7 @@ else:
     # Modo Local padrão caso o PostgreSQL/Supabase ainda não esteja com credenciais no .env
     DATABASES = {
         "default": {
-            "ENGINE": django.db.backends.sqlite3, 
+            "ENGINE": "django.db.backends.sqlite3", 
             "NAME": BASE_DIR / "db.sqlite3"
         }
     }
